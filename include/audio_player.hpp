@@ -15,17 +15,10 @@ public:
 
     // Playback controls
     bool play();
-    bool pause();
-    bool stop();
+    bool pause(); // does nothing
+    bool stop(); // does nothing
     bool next();
     bool previous();
-
-    // Volume control
-    void setVolume(float volume);
-    float getVolume() const;
-
-    // Seek functionality
-    void seek(std::chrono::seconds position);
 
     // Playlist management
     bool loadPlaylist(const std::string &path);

@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include "audio_player.hpp"
+#include "ui/songs_ui.hpp"
 
 class TerminalUI
 {
@@ -16,24 +17,18 @@ public:
     void cleanup();
 
 private:
+    SongsUI songsUI;
     AudioPlayer *player_;
     bool running_;
 
     // UI Components
-    void drawHeader();
-    void drawPlaylist();
-    void drawControls();
-    void drawProgressBar();
-    void drawFooter();
+    void drawMainPage();
 
     // Input handling
-    void handleInput(int key);
     void processCommand(const std::string &command);
 
     // Helper functions
     void refreshScreen();
-    std::string formatTime(std::chrono::seconds time) const;
-    void showHelp();
 };
 
 #endif // TERMINAL_UI_HPP

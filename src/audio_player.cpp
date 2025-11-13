@@ -76,22 +76,6 @@ bool AudioPlayer::previous()
     return play();
 }
 
-void AudioPlayer::setVolume(float volume)
-{
-    volume_ = std::clamp(volume, 0.0f, 1.0f);
-    audioEngine_->setVolume(volume_);
-}
-
-float AudioPlayer::getVolume() const
-{
-    return volume_;
-}
-
-void AudioPlayer::seek(std::chrono::seconds position)
-{
-    audioEngine_->seek(position);
-}
-
 bool AudioPlayer::loadPlaylist(const std::string &path)
 {
     return playlist_.loadFromFile(path);
