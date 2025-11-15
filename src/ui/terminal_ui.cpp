@@ -1,13 +1,7 @@
 #include "ui/terminal_ui.hpp"
-#include "utils/logger.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-
-TerminalUI::TerminalUI(AudioPlayer *player)
-    : player_(player), running_(false)
-{
-}
 
 TerminalUI::~TerminalUI()
 {
@@ -17,17 +11,17 @@ TerminalUI::~TerminalUI()
 bool TerminalUI::initialize()
 {
     // TODO: Initialize ncurses or other terminal UI library
-    Logger::getInstance().log(LogLevel::INFO, "Terminal UI initialized");
     return true;
 }
 
 void TerminalUI::run()
 {
-    running_ = true;
+    bool running = true;
 
     std::cout << "=== Terminal Music Player ===" << std::endl;
+    drawMainPage();
 
-    while (running_)
+    while (running)
     {
         std::cout << "\n> ";
         std::string input;
@@ -35,8 +29,8 @@ void TerminalUI::run()
 
         if (!input.empty())
         {
-          if (input == "0") running_ = false;
-          processCommand(input);
+          processCommand(input, running);
+          drawMainPage();
         }
     }
 }
@@ -44,33 +38,34 @@ void TerminalUI::run()
 void TerminalUI::cleanup()
 {
     // TODO: Cleanup ncurses or terminal UI
-    Logger::getInstance().log(LogLevel::INFO, "Terminal UI cleaned up");
 }
 
-void Terminal::drawMainPage()
+void TerminalUI::drawMainPage()
 {
-  std::cout << "main player" << std::endl;
+  std::cout << "main page" << std::endl;
   std::cout << "1. songs" << std::endl;
   std::cout << "2. playlists" << std::endl;
   std::cout << "3. song queue" << std::endl;
   std::cout << "0. exit" << std::endl;
 }
 
-void TerminalUI::processCommand(const std::string &command)
+void TerminalUI::processCommand(const std::string &command, bool &running)
 {
   if (command == "1") {
-    songsUI::run()
+    songsUI.run();
   }
   else if (command == "2") {
    // TODO 
   }
   else if (command == "3") {
-   // TODO 
+   // TODO
   }
+    else if (command == "0") {
+        running = false;
+    }
   else {
-    std::cout << "unkown command" << std::endl;
+    std::cout << "unkown command\n" << std::endl;
   }
-  return false;
 }
 
 void TerminalUI::refreshScreen()
