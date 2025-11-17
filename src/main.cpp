@@ -1,14 +1,13 @@
 #include <iostream>
 #include <memory>
-#include "ui/terminal_ui.hpp"
+#include "ui/Main.hpp"
 
-int main(int argc, char *argv[])
+int main()
 {
     try
     {
-
-        // Create terminal UI
-        auto ui = std::make_unique<TerminalUI>();
+        // Create main UI
+        auto ui = std::make_unique<Main>();
 
         // Initialize UI
         if (!ui->initialize())
