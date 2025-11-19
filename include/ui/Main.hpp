@@ -8,20 +8,17 @@
 class Main
 {
 public:
-    Main();
-    ~Main();
-
     // List of playlists
     static std::vector<Playlist> playlists_;
     
     // Song queue
     static std::queue<Song> songQueue_;
 
-    bool initialize();
     void run();
-    void cleanup();
 
     static void clearScreen();
+
+    // Playlist management
     static std::vector<Playlist> getPlaylists(Song &song);
     static void addSongToPlaylist(Song &song, const std::string &playlistName, int position);
     static bool songExistsInPlaylist(const Song &song, const std::string &playlistName);

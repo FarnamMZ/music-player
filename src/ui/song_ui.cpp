@@ -75,7 +75,7 @@ void SongUI::processCommand(const std::string &command, bool &running)
       std::getline(std::cin, positionStr);
       
       int position = std::stoi(positionStr);
-      Main::addSongToPlaylist(currentSong_, playlistName, position);
+      Main::addSongToPlaylist(currentSong_, playlistName, position-1);
 
     } catch (const std::invalid_argument &e) {
       std::cout << "Invalid position. Please enter a valid number." << std::endl;

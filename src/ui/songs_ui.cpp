@@ -57,11 +57,15 @@ void SongsUI::processCommand(const std::string &command, bool &running)
     else
     {
       std::cout << "Invalid song number" << std::endl;
+      std::cout << "\nPress Enter to continue...";
+      std::cin.get();
     }
   }
   else
   {
     std::cout << "unknown command" << std::endl;
+    std::cout << "\nPress Enter to continue...";
+    std::cin.get();
   }
 }
 

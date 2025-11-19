@@ -1,4 +1,6 @@
 #include "ui/Main.hpp"
+#include "ui/queue_ui.hpp"
+#include "ui/playlists_ui.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -8,31 +10,11 @@
 std::vector<Playlist> Main::playlists_;
 std::queue<Song> Main::songQueue_;
 
-Main::Main()
-{
-  // Initialize playlists from sample songs
-  playlists_ = {
-      {"My Favorites", {sampleSongs[0], sampleSongs[1]}},
-      {"Chill Vibes", {sampleSongs[2], sampleSongs[3]}}};
-}
-
-Main::~Main()
-{
-  cleanup();
-}
-
-bool Main::initialize()
-{
-  // TODO: Initialize ncurses or other terminal UI library
-  return true;
-}
-
 void Main::run()
 {
   bool running = true;
 
   clearScreen();
-  std::cout << "=== Terminal Music Player ===" << std::endl;
   drawMainPage();
 
   while (running)
@@ -47,25 +29,10 @@ void Main::run()
       if (running)
       {
         clearScreen();
-        std::cout << "=== Terminal Music Player ===" << std::endl;
         drawMainPage();
       }
     }
   }
-}
-
-void Main::cleanup()
-{
-  // TODO: Cleanup ncurses or terminal UI
-}
-
-void Main::drawMainPage()
-{
-  std::cout << "main page" << std::endl;
-  std::cout << "1. songs" << std::endl;
-  std::cout << "2. playlists" << std::endl;
-  std::cout << "3. song queue" << std::endl;
-  std::cout << "0. exit" << std::endl;
 }
 
 void Main::processCommand(const std::string &command, bool &running)
@@ -77,11 +44,13 @@ void Main::processCommand(const std::string &command, bool &running)
   }
   else if (command == "2")
   {
-    // TODO
+    PlaylistsUI playlistsUI;
+    playlistsUI.run();
   }
   else if (command == "3")
   {
-    // TODO
+    QueueUI queueUI;
+    queueUI.run();
   }
   else if (command == "0")
   {
@@ -89,9 +58,19 @@ void Main::processCommand(const std::string &command, bool &running)
   }
   else
   {
-    std::cout << "unkown command\n"
-              << std::endl;
+    std::cout << "unknown command\n" << std::endl;
   }
+}
+
+// UI Components
+void Main::drawMainPage()
+{
+  std::cout << "=== Terminal Music Player ===" << std::endl;
+  std::cout << "main page" << std::endl;
+  std::cout << "1. songs" << std::endl;
+  std::cout << "2. playlists" << std::endl;
+  std::cout << "3. song queue" << std::endl;
+  std::cout << "0. exit" << std::endl;
 }
 
 void Main::clearScreen()
@@ -103,6 +82,7 @@ void Main::clearScreen()
 #endif
 }
 
+// Playlist management functions
 std::vector<Playlist> Main::getPlaylists(Song &song)
 {
   std::vector<Playlist> playlists;
@@ -148,6 +128,18 @@ void Main::addSongToPlaylist(Song &song, const std::string &playlistName, int po
   }
 }
 
+bool Main::songExistsInPlaylist(const Song &song, const std::string &playlistName)
+{
+  auto it = std::find_if(playlists_.begin(), playlists_.end(),
+                         [&playlistName](const Playlist &pl)
+                         { return pl.name == playlistName; });
+  if (it != playlists_.end())
+  {
+    return std::find(it->songs.begin(), it->songs.end(), song) != it->songs.end();
+  }
+  throw std::runtime_error("Playlist \"" + playlistName + "\" not found.");
+}
+
 // Queue management functions
 void Main::addToQueue(const Song &song)
 {
@@ -156,10 +148,7 @@ void Main::addToQueue(const Song &song)
 }
 
 void Main::displayQueue()
-{
-  clearScreen();
-  std::cout << "=== Song Queue ===" << std::endl;
-  
+{  
   if (songQueue_.empty())
   {
     std::cout << "Queue is empty." << std::endl;
@@ -177,8 +166,6 @@ void Main::displayQueue()
     std::cout << position++ << ". " << song.title << " - " << song.artist << std::endl;
     tempQueue.pop();
   }
-  
-  std::cout << "\nTotal songs in queue: " << songQueue_.size() << std::endl;
 }
 
 Song Main::getNextFromQueue()
@@ -195,16 +182,4 @@ Song Main::getNextFromQueue()
 bool Main::isQueueEmpty()
 {
   return songQueue_.empty();
-}
-
-bool Main::songExistsInPlaylist(const Song &song, const std::string &playlistName)
-{
-  auto it = std::find_if(playlists_.begin(), playlists_.end(),
-                         [&playlistName](const Playlist &pl)
-                         { return pl.name == playlistName; });
-  if (it != playlists_.end())
-  {
-    return std::find(it->songs.begin(), it->songs.end(), song) != it->songs.end();
-  }
-  throw std::runtime_error("Playlist \"" + playlistName + "\" not found.");
 }
