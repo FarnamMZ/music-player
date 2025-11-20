@@ -24,6 +24,12 @@ struct Playlist
     std::vector<Song> songs;
 };
 
+enum class PlayerSource {
+    NONE,
+    PLAYLIST,
+    QUEUE
+};
+
 // sample songs
 static std::vector<Song> sampleSongs = {
     {"Song A", "Artist 1", "/path/to/songA.mp3", 210},

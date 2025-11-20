@@ -7,7 +7,6 @@ void SongUI::run()
   bool running = true;
 
   Main::clearScreen();
-  std::cout << currentSong_.title << " - " << currentSong_.artist << std::endl;
   drawSongPage();
 
   while (running)
@@ -22,7 +21,6 @@ void SongUI::run()
       if (running)
       {
         Main::clearScreen();
-        std::cout << currentSong_.title << " - " << currentSong_.artist << std::endl;
         drawSongPage();
       }
     }
@@ -31,7 +29,17 @@ void SongUI::run()
 
 void SongUI::processCommand(const std::string &command, bool &running)
 {
-  if (command == "1")
+  if (command == "next")
+  {
+    Main::player_->next();
+    Main::checkAndPopFinishedPlayer(); // Check if finished after next
+  }
+  else if (command == "prev")
+  {
+    Main::player_->prev();
+    Main::checkAndPopFinishedPlayer(); // Check if finished after prev
+  }
+  else if (command == "1")
   {
     Main::clearScreen();
 
@@ -106,10 +114,17 @@ void SongUI::processCommand(const std::string &command, bool &running)
 
 void SongUI::drawSongPage()
 {
+  Main::player_->drawPlayerHeader();
+  std::cout << std::endl;
+  std::cout << currentSong_.title << " - " << currentSong_.artist << std::endl;
+  std::cout << std::endl;
   std::cout << "1. List of playlists" << std::endl;
   std::cout << "2. Add to playlist" << std::endl;
   std::cout << "3. Add to queue" << std::endl;
   std::cout << "0. back" << std::endl;
+  std::cout << std::endl;
+  std::cout << ">. next " << std::endl;
+  std::cout << ">. prev " << std::endl;
 }
 
 void SongUI::drawPlaylistsContainingSong()

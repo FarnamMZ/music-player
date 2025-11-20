@@ -8,7 +8,6 @@ void PlaylistsUI::run()
     bool running = true;
 
     Main::clearScreen();
-    std::cout << "=== Playlists ===" << std::endl;
     drawPlaylistsPage();
 
     while (running)
@@ -23,7 +22,6 @@ void PlaylistsUI::run()
             if (running)
             {
                 Main::clearScreen();
-                std::cout << "=== Playlists ===" << std::endl;
                 drawPlaylistsPage();
             }
         }
@@ -32,6 +30,8 @@ void PlaylistsUI::run()
 
 void PlaylistsUI::drawPlaylistsPage()
 {
+    Main::player_->drawPlayerHeader();
+    std::cout << std::endl;
     std::cout << "List of playlists" << std::endl;
     int index = 1;
     for (const auto &playlist : Main::playlists_)
@@ -40,11 +40,24 @@ void PlaylistsUI::drawPlaylistsPage()
     }
     std::cout << "-1. add playlist" << std::endl;
     std::cout << "0. back" << std::endl;
+    std::cout << std::endl;
+    std::cout << ">. next " << std::endl;
+    std::cout << ">. prev " << std::endl;
 }
 
 void PlaylistsUI::processCommand(const std::string &command, bool &running)
 {
-    if (std::isdigit(command[0]) || (command[0] == '-' && command.size() > 1 && std::isdigit(command[1])))
+    if (command == "next")
+    {
+        Main::player_->next();
+        Main::checkAndPopFinishedPlayer(); // Check if finished after next
+    }
+    else if (command == "prev")
+    {
+        Main::player_->prev();
+        Main::checkAndPopFinishedPlayer(); // Check if finished after prev
+    }
+    else if (std::isdigit(command[0]) || (command[0] == '-' && command.size() > 1 && std::isdigit(command[1])))
     {
         int playlistIndex = std::stoi(command);
         if (playlistIndex == 0)

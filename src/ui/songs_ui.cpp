@@ -41,8 +41,18 @@ void SongsUI::run()
 
 void SongsUI::processCommand(const std::string &command, bool &running)
 {
+  if (command == "next")
+  {
+    Main::player_->next();
+    Main::checkAndPopFinishedPlayer(); // Check if finished after next
+  }
+  else if (command == "prev")
+  {
+    Main::player_->prev();
+    Main::checkAndPopFinishedPlayer(); // Check if finished after prev
+  }
   // check if i is a number
-  if (std::isdigit(command[0]))
+  else if (std::isdigit(command[0]))
   {
     int songIndex = std::stoi(command);
     if (songIndex > 0 && songIndex <= static_cast<int>(songs_.size()))
@@ -71,6 +81,8 @@ void SongsUI::processCommand(const std::string &command, bool &running)
 
 void SongsUI::drawSongs()
 {
+  Main::player_->drawPlayerHeader();
+  std::cout << std::endl;
   std::cout << "Songs List:" << std::endl;
   int index = 1;
   for (const auto &song : songs_)
@@ -78,6 +90,9 @@ void SongsUI::drawSongs()
     std::cout << index++ << ". " << song.title << ", " << song.artist << std::endl;
   }
   std::cout << "0. back" << std::endl;
+  std::cout << std::endl;
+  std::cout << ">. next " << std::endl;
+  std::cout << ">. prev " << std::endl;
 }
 
 void SongsUI::addSong(const Song &song)

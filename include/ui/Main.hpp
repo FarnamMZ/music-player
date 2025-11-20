@@ -1,16 +1,30 @@
 #pragma once
 #include <string>
 #include <memory>
-#include <queue>
+#include <stack>
 #include "ui/songs_ui.hpp"
 #include "types.hpp"
+#include "player.hpp"
 
 class Main
 {
 public:
+    Main();
+    ~Main();
+
+    // Players that work like a stack
+    static std::stack<Player *> playersStack_;
+    static void pushPlayer(Player *player);
+    static void popPlayer();
+    static void checkAndPopFinishedPlayer();
+    static bool isPlaylistCurrentlyPlaying(Playlist *playlist);
+
+    // Current active player
+    static Player *player_;
+
     // List of playlists
     static std::vector<Playlist> playlists_;
-    
+
     // Song queue
     static std::queue<Song> songQueue_;
 
@@ -28,6 +42,7 @@ public:
     static void displayQueue();
     static Song getNextFromQueue();
     static bool isQueueEmpty();
+
 private:
     // UI Components
     void drawMainPage();

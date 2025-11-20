@@ -6,9 +6,81 @@
 #include <sstream>
 #include <cstdlib>
 
-// Define the static member variable
+// Define the static member variables
 std::vector<Playlist> Main::playlists_;
 std::queue<Song> Main::songQueue_;
+Player *Main::player_;
+std::stack<Player *> Main::playersStack_;
+
+Main::Main()
+{
+  // Initialize player
+  player_ = new Player();
+  playersStack_ = std::stack<Player *>();
+}
+
+Main::~Main()
+{
+  // Clean up players
+  if (player_)
+  {
+    delete player_;
+    player_ = nullptr;
+  }
+
+  // Clean up players in stack
+  while (!playersStack_.empty())
+  {
+    Player *p = playersStack_.top();
+    playersStack_.pop();
+    delete p;
+  }
+}
+
+// Player management functions
+void Main::pushPlayer(Player *player)
+{
+  playersStack_.push(player);
+  player_ = playersStack_.top();
+}
+
+void Main::popPlayer()
+{
+  if (!playersStack_.empty())
+  {
+    Player *oldPlayer = playersStack_.top();
+    playersStack_.pop();
+    delete oldPlayer;
+
+    // Restore previous player or default
+    if (!playersStack_.empty())
+    {
+      player_ = playersStack_.top();
+    }
+    else
+    {
+      player_ = new Player(); // Default player
+    }
+  }
+}
+
+void Main::checkAndPopFinishedPlayer()
+{
+  if (player_ && player_->isFinished())
+  {
+    popPlayer();
+  }
+}
+
+bool Main::isPlaylistCurrentlyPlaying(Playlist *playlist)
+{
+  // Check if the current player is playing this playlist
+  if (player_ && player_->getPlaylist() == playlist)
+  {
+    return true;
+  }
+  return false;
+}
 
 void Main::run()
 {
@@ -19,6 +91,9 @@ void Main::run()
 
   while (running)
   {
+    // Check if current player is finished
+    checkAndPopFinishedPlayer();
+
     std::cout << "\n> ";
     std::string input;
     std::getline(std::cin, input);
@@ -37,7 +112,17 @@ void Main::run()
 
 void Main::processCommand(const std::string &command, bool &running)
 {
-  if (command == "1")
+  if (command == "next")
+  {
+    Main::player_->next();
+    Main::checkAndPopFinishedPlayer(); // Check if finished after next
+  }
+  else if (command == "prev")
+  {
+    Main::player_->prev();
+    Main::checkAndPopFinishedPlayer(); // Check if finished after prev
+  }
+  else if (command == "1")
   {
     SongsUI songsUI;
     songsUI.run();
@@ -58,19 +143,25 @@ void Main::processCommand(const std::string &command, bool &running)
   }
   else
   {
-    std::cout << "unknown command\n" << std::endl;
+    std::cout << "unknown command\n"
+              << std::endl;
   }
 }
 
 // UI Components
 void Main::drawMainPage()
 {
+  Main::player_->drawPlayerHeader();
+  std::cout << std::endl;
   std::cout << "=== Terminal Music Player ===" << std::endl;
   std::cout << "main page" << std::endl;
   std::cout << "1. songs" << std::endl;
   std::cout << "2. playlists" << std::endl;
   std::cout << "3. song queue" << std::endl;
   std::cout << "0. exit" << std::endl;
+  std::cout << std::endl;
+  std::cout << ">. next " << std::endl;
+  std::cout << ">. prev " << std::endl;
 }
 
 void Main::clearScreen()
@@ -102,7 +193,7 @@ void Main::addSongToPlaylist(Song &song, const std::string &playlistName, int po
                          [&playlistName](const Playlist &pl)
                          { return pl.name == playlistName; });
   if (it != playlists_.end())
-  {    
+  {
     if (position < 0)
     {
       // Add at the beginning (before index 0)
@@ -148,18 +239,18 @@ void Main::addToQueue(const Song &song)
 }
 
 void Main::displayQueue()
-{  
+{
   if (songQueue_.empty())
   {
     std::cout << "Queue is empty." << std::endl;
     return;
   }
-  
+
   // Note: std::queue doesn't support iteration directly
   // We need to copy it to display all items
   std::queue<Song> tempQueue = songQueue_;
   int position = 1;
-  
+
   while (!tempQueue.empty())
   {
     const Song &song = tempQueue.front();

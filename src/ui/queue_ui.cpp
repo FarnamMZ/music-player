@@ -29,16 +29,31 @@ void QueueUI::run()
 
 void QueueUI::drawQueuePage()
 {
+    Main::player_->drawPlayerHeader();
+    std::cout << std::endl;
     std::cout << "=== Song Queue ===" << std::endl;
     Main::displayQueue();
     std::cout << "\n-1. play" << std::endl;
     std::cout << "\n0. back" << std::endl;
+    std::cout << std::endl;
+    std::cout << ">. next " << std::endl;
+    std::cout << ">. prev " << std::endl;
 }
 
 void QueueUI::processCommand(const std::string &command, bool &running)
 {
+    if (command == "next")
+    {
+        Main::player_->next();
+        Main::checkAndPopFinishedPlayer(); // Check if finished after next
+    }
+    else if (command == "prev")
+    {
+        Main::player_->prev();
+        Main::checkAndPopFinishedPlayer(); // Check if finished after prev
+    }
     // check if command is a number
-    if (std::isdigit(command[0]) || (command[0] == '-' && command.size() > 1 && std::isdigit(command[1])))
+    else if (std::isdigit(command[0]) || (command[0] == '-' && command.size() > 1 && std::isdigit(command[1])))
     {
         int cmdNum = std::stoi(command);
         if (cmdNum == -1)

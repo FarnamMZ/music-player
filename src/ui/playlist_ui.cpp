@@ -30,7 +30,7 @@ void PlaylistUI::run()
 
 void PlaylistUI::drawPlaylistPage()
 {
-    drawCurrentSongInCDLL();
+    Main::player_->drawPlayerHeader();
     std::cout << std::endl;
     std::cout << "Playlist " << currentPlaylist_->name << std::endl;
     int index = 1;
@@ -46,37 +46,17 @@ void PlaylistUI::drawPlaylistPage()
     std::cout << ">. prev " << std::endl;
 }
 
-void PlaylistUI::drawCurrentSongInCDLL()
-{
-    if (currentSong_ != nullptr)
-    {
-        std::cout << "song playing: " << "\"" << currentSong_->data.title << " by " << currentSong_->data.artist << "\"" << std::endl;
-    }
-    else
-    {
-        std::cout << "No current song selected." << std::endl;
-    }
-}
-
 void PlaylistUI::processCommand(const std::string &command, bool &running)
 {
     if (command == "next")
     {
-        if (currentSong_)
-        {
-            currentSong_ = songs_.prev(currentSong_);
-            if (currentSong_ == lastSong_)
-                currentSong_ = nullptr;
-        }
+        Main::player_->next();
+        Main::checkAndPopFinishedPlayer(); // Check if finished after next
     }
     else if (command == "prev")
     {
-        if (currentSong_)
-        {
-            currentSong_ = songs_.next(currentSong_);
-            if (currentSong_ == lastSong_)
-                currentSong_ = nullptr;
-        }
+        Main::player_->prev();
+        Main::checkAndPopFinishedPlayer(); // Check if finished after prev
     }
     else if (std::isdigit(command[0]) || (command[0] == '-' && command.size() > 1 && std::isdigit(command[1])))
     {
@@ -105,21 +85,30 @@ void PlaylistUI::processCommand(const std::string &command, bool &running)
         }
         else if (songIndex == -2)
         {
+            // Check if this playlist is already playing
+            if (Main::isPlaylistCurrentlyPlaying(currentPlaylist_))
+            {
+                std::cout << "This playlist is already being played!" << std::endl;
+                std::cout << "\nPress Enter to continue...";
+                std::cin.get();
+                return;
+            }
+
             std::cout << "Enter starting song number: ";
             std::string songNumberStr;
             std::getline(std::cin, songNumberStr);
             int startIndex;
             try
-            {                
+            {
                 startIndex = std::stoi(songNumberStr);
 
                 // load songs into cdll starting from startIndex - 1
-                if (startIndex < 1) loadSongsIntoCDLL(0);
-                else if (startIndex > static_cast<int>(currentPlaylist_->songs.size())) loadSongsIntoCDLL(static_cast<int>(currentPlaylist_->songs.size()) - 1);
-                else loadSongsIntoCDLL(startIndex - 1);
-
-                currentSong_ = songs_.tail();
-                lastSong_ = songs_.tail();
+                if (startIndex < 1)
+                    Main::pushPlayer(new PlaylistPlayer(currentPlaylist_, 0));
+                else if (startIndex > static_cast<int>(currentPlaylist_->songs.size()))
+                    Main::pushPlayer(new PlaylistPlayer(currentPlaylist_, static_cast<int>(currentPlaylist_->songs.size()) - 1));
+                else
+                    Main::pushPlayer(new PlaylistPlayer(currentPlaylist_, startIndex - 1));
             }
             catch (...)
             {
@@ -128,8 +117,6 @@ void PlaylistUI::processCommand(const std::string &command, bool &running)
                 std::cin.get();
                 return;
             }
-
-            
         }
         else if (songIndex > 0 && songIndex <= static_cast<int>(currentPlaylist_->songs.size()))
         {
@@ -179,20 +166,4 @@ void PlaylistUI::deleteSong(int index)
     }
     std::cout << "\nPress Enter to continue...";
     std::cin.get();
-}
-
-void PlaylistUI::loadSongsIntoCDLL(int startIndex)
-{
-    // clear existing songs in the cdll
-    songs_.clearAll();
-
-    // Load songs from the current playlist into the circular doubly linked list
-    for (int i = startIndex; i < static_cast<int>(currentPlaylist_->songs.size()); i++)
-    {
-        songs_.insert(currentPlaylist_->songs[i]);
-    }
-    for (int i = 0; i < startIndex; i++)
-    {
-        songs_.insert(currentPlaylist_->songs[i]);
-    }
 }
