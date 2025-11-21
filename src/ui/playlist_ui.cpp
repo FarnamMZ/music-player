@@ -34,10 +34,19 @@ void PlaylistUI::drawPlaylistPage()
     std::cout << std::endl;
     std::cout << "Playlist " << currentPlaylist_->name << std::endl;
     int index = 1;
-    for (const auto &song : currentPlaylist_->songs)
+    node<Song> *current = currentPlaylist_->songs.head();
+    node<Song> *start = current;
+
+    while (current)
     {
-        std::cout << index++ << ". " << song.title << " by " << song.artist << std::endl;
+        std::cout << index++ << ". " << current->data.title << " by " << current->data.artist << std::endl;
+        current = currentPlaylist_->songs.next(current);
+
+        // Stop if we've looped back to the start or reached the end
+        if (current == start || current == nullptr)
+            break;
     }
+    std::cout << std::endl;
     std::cout << "-2. play" << std::endl;
     std::cout << "-1. delete a song" << std::endl;
     std::cout << "0. back" << std::endl;
@@ -102,6 +111,11 @@ void PlaylistUI::processCommand(const std::string &command, bool &running)
             {
                 startIndex = std::stoi(songNumberStr);
 
+                if (Main::player_->getSource() != PlayerSource::NONE)
+                {
+                    Main::player_->next();
+                }
+
                 // load songs into cdll starting from startIndex - 1
                 if (startIndex < 1)
                     Main::pushPlayer(new PlaylistPlayer(currentPlaylist_, 0));
@@ -118,10 +132,14 @@ void PlaylistUI::processCommand(const std::string &command, bool &running)
                 return;
             }
         }
-        else if (songIndex > 0 && songIndex <= static_cast<int>(currentPlaylist_->songs.size()))
+        else if (songIndex > 0 && songIndex <= currentPlaylist_->songs.size())
         {
-            SongUI songUI(&currentPlaylist_->songs[songIndex - 1]);
-            songUI.run();
+            node<Song> *songNode = currentPlaylist_->songs.getAt(songIndex - 1);
+            if (songNode)
+            {
+                SongUI songUI(&songNode->data);
+                songUI.run();
+            }
         }
         else
         {
@@ -140,25 +158,49 @@ void PlaylistUI::processCommand(const std::string &command, bool &running)
 
 void PlaylistUI::deleteSong(int index)
 {
-    if (index >= 0 && index < static_cast<int>(currentPlaylist_->songs.size()))
+    if (index >= 0 && index < currentPlaylist_->songs.size())
     {
-        Song songToDelete = currentPlaylist_->songs[index];
-        currentPlaylist_->songs.erase(currentPlaylist_->songs.begin() + index);
-        std::cout << "Deleted \"" << songToDelete.title << "\" from playlist \"" << currentPlaylist_->name << "\"" << std::endl;
+        node<Song> *nodeToDelete = currentPlaylist_->songs.getAt(index);
+        if (nodeToDelete)
+        {
+            Song songToDelete = nodeToDelete->data;
+
+            // Move currentSong_ in any PlaylistPlayer that's pointing to this node
+            movePlayersAwayFromNode(nodeToDelete);
+
+            currentPlaylist_->songs.remove(nodeToDelete);
+            std::cout << "Deleted \"" << songToDelete.title << "\" from playlist \"" << currentPlaylist_->name << "\"" << std::endl;
+        }
     }
     // delete first song
     else if (index < 0)
     {
-        Song songToDelete = currentPlaylist_->songs[0];
-        currentPlaylist_->songs.erase(currentPlaylist_->songs.begin());
-        std::cout << "Deleted \"" << songToDelete.title << "\" from playlist \"" << currentPlaylist_->name << "\"" << std::endl;
+        node<Song> *nodeToDelete = currentPlaylist_->songs.head();
+        if (nodeToDelete)
+        {
+            Song songToDelete = nodeToDelete->data;
+
+            // Move currentSong_ in any PlaylistPlayer that's pointing to this node
+            movePlayersAwayFromNode(nodeToDelete);
+
+            currentPlaylist_->songs.remove(nodeToDelete);
+            std::cout << "Deleted \"" << songToDelete.title << "\" from playlist \"" << currentPlaylist_->name << "\"" << std::endl;
+        }
     }
     // delete last song
-    else if (index >= static_cast<int>(currentPlaylist_->songs.size()))
+    else if (index >= currentPlaylist_->songs.size())
     {
-        Song songToDelete = currentPlaylist_->songs.back();
-        currentPlaylist_->songs.pop_back();
-        std::cout << "Deleted \"" << songToDelete.title << "\" from playlist \"" << currentPlaylist_->name << "\"" << std::endl;
+        node<Song> *nodeToDelete = currentPlaylist_->songs.tail();
+        if (nodeToDelete)
+        {
+            Song songToDelete = nodeToDelete->data;
+
+            // Move currentSong_ in any PlaylistPlayer that's pointing to this node
+            movePlayersAwayFromNode(nodeToDelete);
+
+            currentPlaylist_->songs.remove(nodeToDelete);
+            std::cout << "Deleted \"" << songToDelete.title << "\" from playlist \"" << currentPlaylist_->name << "\"" << std::endl;
+        }
     }
     else
     {
@@ -166,4 +208,44 @@ void PlaylistUI::deleteSong(int index)
     }
     std::cout << "\nPress Enter to continue...";
     std::cin.get();
+}
+
+void PlaylistUI::movePlayersAwayFromNode(node<Song> *nodeToDelete)
+{
+    // Move current player if it's pointing to this node
+    if (Main::player_ && Main::player_->getPlaylist() == currentPlaylist_)
+    {
+        PlaylistPlayer *playlistPlayer = dynamic_cast<PlaylistPlayer *>(Main::player_);
+        if (playlistPlayer)
+        {
+            playlistPlayer->moveCurrentSongIfMatches(nodeToDelete);
+        }
+    }
+
+    // Move all players in the stack if they're pointing to this node
+    std::stack<Player *> tempStack;
+
+    while (!Main::playersStack_.empty())
+    {
+        Player *p = Main::playersStack_.top();
+        Main::playersStack_.pop();
+
+        if (p->getPlaylist() == currentPlaylist_)
+        {
+            PlaylistPlayer *playlistPlayer = dynamic_cast<PlaylistPlayer *>(p);
+            if (playlistPlayer)
+            {
+                playlistPlayer->moveCurrentSongIfMatches(nodeToDelete);
+            }
+        }
+
+        tempStack.push(p);
+    }
+
+    // Rebuild the stack
+    while (!tempStack.empty())
+    {
+        Main::playersStack_.push(tempStack.top());
+        tempStack.pop();
+    }
 }

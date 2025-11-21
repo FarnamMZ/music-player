@@ -52,7 +52,6 @@ class PlaylistPlayer : public Player
 {
 private:
     Playlist *currentPlaylist_;
-    cdll<Song> songs_;
     node<Song> *currentSong_;
     node<Song> *lastSong_;
 
@@ -66,14 +65,17 @@ public:
     void drawPlayerHeader() override;
     bool isFinished() const override;
     Playlist *getPlaylist() const override;
+
+    // Move currentSong_ to next if it matches the node being deleted
+    void moveCurrentSongIfMatches(node<Song> *nodeToDelete);
 };
 
 class QueuePlayer : public Player
 {
-    private:
+private:
     Song *currentSong_;
-    
-    public:
+
+public:
     QueuePlayer();
     ~QueuePlayer() override = default;
 

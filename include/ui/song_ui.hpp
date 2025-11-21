@@ -8,7 +8,6 @@ private:
 
     // UI Components
     void drawSongPage();
-    void drawPlaylistsContainingSong();
     void drawExistedPlaylists();
     void drawSongsInPlaylist(const std::string &playlistName);
 

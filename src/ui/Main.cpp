@@ -30,11 +30,13 @@ Main::Main()
 
 Main::~Main()
 {
-  // Clean up players
-  if (player_)
+  // If current player is in the stack, it will be deleted when we clear the stack
+  // So we need to check if player_ is in the stack
+  bool playerInStack = false;
+
+  if (!playersStack_.empty() && player_ == playersStack_.top())
   {
-    delete player_;
-    player_ = nullptr;
+    playerInStack = true;
   }
 
   // Clean up players in stack
@@ -43,6 +45,13 @@ Main::~Main()
     Player *p = playersStack_.top();
     playersStack_.pop();
     delete p;
+  }
+
+  // Clean up current player only if it wasn't in the stack
+  if (player_ && !playerInStack)
+  {
+    delete player_;
+    player_ = nullptr;
   }
 }
 
@@ -188,7 +197,7 @@ std::vector<Playlist> Main::getPlaylists(Song &song)
   std::vector<Playlist> playlists;
   for (const auto &playlist : playlists_)
   {
-    if (std::find(playlist.songs.begin(), playlist.songs.end(), song) != playlist.songs.end())
+    if (playlist.songs.find(song) != nullptr)
     {
       playlists.push_back(playlist);
     }
@@ -205,21 +214,21 @@ void Main::addSongToPlaylist(Song &song, const std::string &playlistName, int po
   {
     if (position < 0)
     {
-      // Add at the beginning (before index 0)
-      it->songs.insert(it->songs.begin(), song);
+      // Add at the beginning
+      it->songs.insert(song);
       std::cout << "Added \"" << song.title << "\" to playlist \"" << playlistName << "\" at the beginning" << std::endl;
     }
-    else if (position >= static_cast<int>(it->songs.size()) - 1)
+    else if (position >= it->songs.size() - 1)
     {
-      // Add at the end (after the last index)
-      it->songs.push_back(song);
+      // Add at the end
+      it->songs.insertAt(song, it->songs.size());
       std::cout << "Added \"" << song.title << "\" to playlist \"" << playlistName << "\" at the end" << std::endl;
     }
     else
     {
-      // Insert after the given index (position + 1)
-      it->songs.insert(it->songs.begin() + position + 1, song);
-      std::cout << "Added \"" << song.title << "\" to playlist \"" << playlistName << "\" after index " << position << std::endl;
+      // Insert after the given position (position + 1)
+      it->songs.insertAt(song, position + 1);
+      std::cout << "Added \"" << song.title << "\" to playlist \"" << playlistName << "\" after position " << (position + 1) << std::endl;
     }
   }
   else
@@ -235,7 +244,7 @@ bool Main::songExistsInPlaylist(const Song &song, const std::string &playlistNam
                          { return pl.name == playlistName; });
   if (it != playlists_.end())
   {
-    return std::find(it->songs.begin(), it->songs.end(), song) != it->songs.end();
+    return it->songs.find(song) != nullptr;
   }
   throw std::runtime_error("Playlist \"" + playlistName + "\" not found.");
 }

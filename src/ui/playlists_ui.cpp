@@ -38,6 +38,7 @@ void PlaylistsUI::drawPlaylistsPage()
     {
         std::cout << index++ << ". " << playlist.name << " (" << playlist.songs.size() << " songs)" << std::endl;
     }
+    std::cout << std::endl;
     std::cout << "-1. add playlist" << std::endl;
     std::cout << "0. back" << std::endl;
     std::cout << std::endl;

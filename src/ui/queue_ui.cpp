@@ -50,14 +50,20 @@ void QueueUI::processCommand(const std::string &command, bool &running) {
             std::isdigit(command[1]))) {
     int cmdNum = std::stoi(command);
     if (cmdNum == -1) {
-      QueuePlayer *queuePlayer = new QueuePlayer();
-      Main::pushPlayer(queuePlayer);
-      if (Main::isQueueEmpty()) {
-        std::cout << "Queue is empty. Cannot play." << std::endl;
-        std::cout << "\nPress Enter to continue...";
-        std::cin.get();
-        return;
-      }
+        if (Main::isQueueEmpty()) {
+            std::cout << "Queue is empty. Cannot play." << std::endl;
+            std::cout << "\nPress Enter to continue...";
+            std::cin.get();
+            return;
+        }
+
+        if (Main::player_->getSource() != PlayerSource::NONE)
+        {
+            Main::player_->next();
+        }
+
+        QueuePlayer *queuePlayer = new QueuePlayer();
+        Main::pushPlayer(queuePlayer);
     } else if (cmdNum == 0) {
       running = false;
     }

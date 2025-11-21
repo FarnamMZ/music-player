@@ -1,5 +1,6 @@
 #include "ui/song_ui.hpp"
 #include "ui/Main.hpp"
+#include "ui/playlist_ui.hpp"
 #include <iostream>
 #include <algorithm>
 
@@ -44,8 +45,48 @@ void SongUI::processCommand(const std::string &command, bool &running)
   {
     Main::clearScreen();
 
-    // Show list of playlists containing this song
-    drawPlaylistsContainingSong();
+    // Show list of playlists containing this song and allow selection
+    auto playlists = Main::getPlaylists(*currentSong_);
+    if (playlists.empty())
+    {
+      std::cout << "This song is not in any playlist." << std::endl;
+      std::cout << "\nPress Enter to continue...";
+      std::cin.get();
+    }
+    else
+    {
+      // Display numbered list
+      std::cout << "Playlists containing this song:" << std::endl;
+      int index = 1;
+      for (const auto &playlist : playlists)
+      {
+        std::cout << index++ << ". " << playlist.name << std::endl;
+      }
+      std::cout << "0. back" << std::endl;
+
+      // Get user selection
+      std::cout << "\n> ";
+      std::string input;
+      std::getline(std::cin, input);
+
+      if (!input.empty() && std::isdigit(input[0]))
+      {
+        int selection = std::stoi(input);
+        if (selection > 0 && selection <= static_cast<int>(playlists.size()))
+        {
+          // Find the actual playlist in Main::playlists_ by name
+          std::string selectedName = playlists[selection - 1].name;
+          auto it = std::find_if(Main::playlists_.begin(), Main::playlists_.end(),
+                                 [&selectedName](const Playlist &pl)
+                                 { return pl.name == selectedName; });
+          if (it != Main::playlists_.end())
+          {
+            PlaylistUI playlistUI(&(*it));
+            playlistUI.run();
+          }
+        }
+      }
+    }
   }
   else if (command == "2")
   {
@@ -135,25 +176,6 @@ void SongUI::drawSongPage()
   std::cout << ">. prev " << std::endl;
 }
 
-void SongUI::drawPlaylistsContainingSong()
-{
-  auto playlists = Main::getPlaylists(*currentSong_);
-  std::cout << "\nPlaylists containing this song:" << std::endl;
-  if (playlists.empty())
-  {
-    std::cout << "This song is not in any playlist." << std::endl;
-  }
-  else
-  {
-    for (const auto &playlist : playlists)
-    {
-      std::cout << "- " << playlist.name << std::endl;
-    }
-  }
-  std::cout << "\nPress Enter to continue...";
-  std::cin.get();
-}
-
 void SongUI::drawExistedPlaylists()
 {
   auto &playlists = Main::playlists_;
@@ -173,9 +195,17 @@ void SongUI::drawSongsInPlaylist(const std::string &playlistName)
   if (it != playlists.end())
   {
     std::cout << "\nSongs in playlist '" << playlistName << "':" << std::endl;
-    for (const auto &song : it->songs)
+    node<Song> *current = it->songs.head();
+    node<Song> *start = current;
+
+    while (current)
     {
-      std::cout << "- " << song.title << " - " << song.artist << std::endl;
+      std::cout << "- " << current->data.title << " - " << current->data.artist << std::endl;
+      current = it->songs.next(current);
+
+      // Stop if we've looped back to the start or reached the end
+      if (current == start || current == nullptr)
+        break;
     }
   }
   else

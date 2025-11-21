@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "cdll.hpp"
 
 // Represents a single audio track
 struct Song
@@ -21,10 +22,11 @@ struct Song
 struct Playlist
 {
     std::string name;
-    std::vector<Song> songs;
+    cdll<Song> songs;
 };
 
-enum class PlayerSource {
+enum class PlayerSource
+{
     NONE,
     PLAYLIST,
     QUEUE

@@ -1,7 +1,5 @@
-# Simple Makefile for quick builds (alternative to CMake)
-
 CXX = g++
-CXXFLAGS = -std=c++17 -I./include
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -I./include
 LDFLAGS = -pthread
 
 # Directories
@@ -36,9 +34,3 @@ clean:
 run: $(TARGET)
 	./$(TARGET)
 
-# Install dependencies (macOS with Homebrew)
-deps:
-	@echo "Installing dependencies..."
-	brew install sdl2 portaudio libsndfile mpg123 taglib ncurses
-
-.PHONY: all clean run deps

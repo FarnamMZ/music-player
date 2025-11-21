@@ -21,4 +21,5 @@ private:
     void processCommand(const std::string &command, bool &running);
 
     void deleteSong(int index);
+    void movePlayersAwayFromNode(node<Song> *nodeToDelete);
 };
