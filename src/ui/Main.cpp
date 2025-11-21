@@ -8,7 +8,8 @@
 
 // Define the static member variables
 std::vector<Playlist> Main::playlists_;
-std::queue<Song> Main::songQueue_;
+std::vector<Song> Main::songs_;
+std::queue<Song *> Main::songQueue_;
 Player *Main::player_;
 std::stack<Player *> Main::playersStack_;
 
@@ -17,6 +18,13 @@ Main::Main()
   // Initialize player
   player_ = new Player();
   playersStack_ = std::stack<Player *>();
+
+  // Initialize songs and playlists (could be loaded from persistent storage)
+  // add sample songs
+  songs_.push_back({"Song A", "Artist 1", "/path/to/songA.mp3", 210});
+  songs_.push_back({"Song B", "Artist 2", "/path/to/songB.mp3", 180});
+  songs_.push_back({"Song C", "Artist 3", "/path/to/songC.mp3", 240});
+  songs_.push_back({"Song D", "Artist 4", "/path/to/songD.mp3", 200});
 }
 
 Main::~Main()
@@ -232,10 +240,10 @@ bool Main::songExistsInPlaylist(const Song &song, const std::string &playlistNam
 }
 
 // Queue management functions
-void Main::addToQueue(const Song &song)
+void Main::addToQueue(Song *song)
 {
   songQueue_.push(song);
-  std::cout << "Added \"" << song.title << "\" to queue." << std::endl;
+  std::cout << "Added \"" << song->title << "\" to queue." << std::endl;
 }
 
 void Main::displayQueue()
@@ -248,22 +256,22 @@ void Main::displayQueue()
 
   // Note: std::queue doesn't support iteration directly
   // We need to copy it to display all items
-  std::queue<Song> tempQueue = songQueue_;
+  std::queue<Song *> tempQueue = songQueue_;
   int position = 1;
 
   while (!tempQueue.empty())
   {
-    const Song &song = tempQueue.front();
-    std::cout << position++ << ". " << song.title << " - " << song.artist << std::endl;
+    const Song *song = tempQueue.front();
+    std::cout << position++ << ". " << song->title << " - " << song->artist << std::endl;
     tempQueue.pop();
   }
 }
 
-Song Main::getNextFromQueue()
+Song *Main::getNextFromQueue()
 {
   if (!songQueue_.empty())
   {
-    Song song = songQueue_.front();
+    Song *song = songQueue_.front();
     songQueue_.pop();
     return song;
   }

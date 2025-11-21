@@ -67,3 +67,17 @@ public:
     bool isFinished() const override;
     Playlist *getPlaylist() const override;
 };
+
+class QueuePlayer : public Player
+{
+    private:
+    Song *currentSong_;
+    
+    public:
+    QueuePlayer();
+    ~QueuePlayer() override = default;
+
+    void next() override;
+    void drawPlayerHeader() override;
+    bool isFinished() const override;
+};

@@ -22,7 +22,6 @@ music-player
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
-Makefile
 
 # OS specific
 .DS_Store

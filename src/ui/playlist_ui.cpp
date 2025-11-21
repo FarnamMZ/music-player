@@ -120,7 +120,7 @@ void PlaylistUI::processCommand(const std::string &command, bool &running)
         }
         else if (songIndex > 0 && songIndex <= static_cast<int>(currentPlaylist_->songs.size()))
         {
-            SongUI songUI(currentPlaylist_->songs[songIndex - 1]);
+            SongUI songUI(&currentPlaylist_->songs[songIndex - 1]);
             songUI.run();
         }
         else

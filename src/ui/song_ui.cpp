@@ -56,41 +56,48 @@ void SongUI::processCommand(const std::string &command, bool &running)
     std::getline(std::cin, playlistName);
 
     // check if song already exists in the playlist
-    try {
-      if (Main::songExistsInPlaylist(currentSong_, playlistName))
+    try
+    {
+      if (Main::songExistsInPlaylist(*currentSong_, playlistName))
       {
         std::cout << "Song already exists in the playlist \"" << playlistName << "\"." << std::endl;
-        
+
         // wait for user to press enter
         std::cout << "\nPress Enter to continue...";
         std::cin.get();
         return;
       }
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
       std::cout << e.what() << std::endl;
-      
+
       // wait for user to press enter
       std::cout << "\nPress Enter to continue...";
       std::cin.get();
       return;
     }
-    
+
     // get position in playlist
-    try {
+    try
+    {
       drawSongsInPlaylist(playlistName);
       std::cout << "\nEnter position to add the song at: ";
       std::string positionStr;
       std::getline(std::cin, positionStr);
-      
-      int position = std::stoi(positionStr);
-      Main::addSongToPlaylist(currentSong_, playlistName, position-1);
 
-    } catch (const std::invalid_argument &e) {
+      int position = std::stoi(positionStr);
+      Main::addSongToPlaylist(*currentSong_, playlistName, position - 1);
+    }
+    catch (const std::invalid_argument &e)
+    {
       std::cout << "Invalid position. Please enter a valid number." << std::endl;
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
       std::cout << e.what() << std::endl;
     }
-  
+
     // wait for user to press enter
     std::cout << "\nPress Enter to continue...";
     std::cin.get();
@@ -116,7 +123,7 @@ void SongUI::drawSongPage()
 {
   Main::player_->drawPlayerHeader();
   std::cout << std::endl;
-  std::cout << currentSong_.title << " - " << currentSong_.artist << std::endl;
+  std::cout << currentSong_->title << " - " << currentSong_->artist << std::endl;
   std::cout << std::endl;
   std::cout << "1. List of playlists" << std::endl;
   std::cout << "2. Add to playlist" << std::endl;
@@ -129,7 +136,7 @@ void SongUI::drawSongPage()
 
 void SongUI::drawPlaylistsContainingSong()
 {
-  auto playlists = Main::getPlaylists(currentSong_);
+  auto playlists = Main::getPlaylists(*currentSong_);
   std::cout << "\nPlaylists containing this song:" << std::endl;
   if (playlists.empty())
   {
@@ -160,7 +167,8 @@ void SongUI::drawSongsInPlaylist(const std::string &playlistName)
 {
   auto &playlists = Main::playlists_;
   auto it = std::find_if(playlists.begin(), playlists.end(),
-                         [&playlistName](const Playlist &pl) { return pl.name == playlistName; });
+                         [&playlistName](const Playlist &pl)
+                         { return pl.name == playlistName; });
   if (it != playlists.end())
   {
     std::cout << "\nSongs in playlist '" << playlistName << "':" << std::endl;

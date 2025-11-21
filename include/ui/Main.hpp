@@ -25,8 +25,11 @@ public:
     // List of playlists
     static std::vector<Playlist> playlists_;
 
+    // List of all songs (persistent storage)
+    static std::vector<Song> songs_;
+
     // Song queue
-    static std::queue<Song> songQueue_;
+    static std::queue<Song *> songQueue_;
 
     void run();
 
@@ -38,9 +41,9 @@ public:
     static bool songExistsInPlaylist(const Song &song, const std::string &playlistName);
 
     // Queue management
-    static void addToQueue(const Song &song);
+    static void addToQueue(Song *song);
     static void displayQueue();
-    static Song getNextFromQueue();
+    static Song *getNextFromQueue();
     static bool isQueueEmpty();
 
 private:

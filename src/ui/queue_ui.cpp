@@ -58,7 +58,15 @@ void QueueUI::processCommand(const std::string &command, bool &running)
         int cmdNum = std::stoi(command);
         if (cmdNum == -1)
         {
-            // TODO
+            QueuePlayer *queuePlayer = new QueuePlayer();
+            Main::pushPlayer(queuePlayer);
+            if (Main::isQueueEmpty())
+            {
+                std::cout << "Queue is empty. Cannot play." << std::endl;
+                std::cout << "\nPress Enter to continue...";
+                std::cin.get();
+                return;
+            }
         }
         else if (cmdNum == 0)
         {
@@ -68,15 +76,18 @@ void QueueUI::processCommand(const std::string &command, bool &running)
         else if (cmdNum > 0 && cmdNum <= static_cast<int>(Main::songQueue_.size()))
         {
             // get the song at position cmdNum in the queue
-            std::queue<Song> tempQueue = Main::songQueue_;
-            Song selectedSong;
+            std::queue<Song *> tempQueue = Main::songQueue_;
+            Song *selectedSong = nullptr;
             for (int i = 1; i <= cmdNum; ++i)
             {
                 selectedSong = tempQueue.front();
                 tempQueue.pop();
             }
-            SongUI songUI(selectedSong);
-            songUI.run();
+            if (selectedSong)
+            {
+                SongUI songUI(selectedSong);
+                songUI.run();
+            }
         }
         else
         {

@@ -1,4 +1,5 @@
 #include "player.hpp"
+#include "ui/Main.hpp"
 #include <iostream>
 
 PlaylistPlayer::PlaylistPlayer(Playlist *playlist, int startIndex)
@@ -21,6 +22,19 @@ PlaylistPlayer::PlaylistPlayer(Playlist *playlist, int startIndex)
 
     currentSong_ = songs_.tail();
     lastSong_ = songs_.tail();
+}
+
+QueuePlayer::QueuePlayer()
+{
+    source_ = PlayerSource::QUEUE; // Set the source
+    try
+    {
+        currentSong_ = Main::getNextFromQueue();
+    }
+    catch (...)
+    {
+        currentSong_ = nullptr;
+    }
 }
 
 void PlaylistPlayer::next()
@@ -57,4 +71,34 @@ bool PlaylistPlayer::isFinished() const
 Playlist *PlaylistPlayer::getPlaylist() const
 {
     return currentPlaylist_;
+}
+
+void QueuePlayer::next()
+{
+    if (!Main::isQueueEmpty())
+    {
+        try
+        {
+            currentSong_ = Main::getNextFromQueue();
+        }
+        catch (...)
+        {
+            currentSong_ = nullptr;
+        }
+    }
+    else
+    {
+        currentSong_ = nullptr;
+    }
+}
+
+void QueuePlayer::drawPlayerHeader()
+{
+    std::cout << "song playing: " << (currentSong_ ? currentSong_->title : "None") << std::endl;
+    std::cout << "source: Queue" << std::endl;
+}
+
+bool QueuePlayer::isFinished() const
+{
+    return currentSong_ == nullptr && Main::isQueueEmpty();
 }

@@ -4,19 +4,16 @@
 
 class SongsUI
 {
-  public:
-    SongsUI();
-    void run();
-  private:
-    // list of songs
-    std::vector<Song> songs_;
+public:
+  void run();
 
-    // UI Components
-    void drawSongs();
+private:
+  // UI Components
+  void drawSongs();
 
-    // Input handling
-    void processCommand(const std::string &command, bool &running);
+  // Input handling
+  void processCommand(const std::string &command, bool &running);
 
-    // add a song to the list in alphabetical order
-    void addSong(const Song &song);
+  // add a song to the list in alphabetical order
+  void addSong(const Song &song);
 };
