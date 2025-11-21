@@ -1,7 +1,7 @@
 # Simple Makefile for quick builds (alternative to CMake)
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -I./include
+CXXFLAGS = -std=c++17 -I./include
 LDFLAGS = -pthread
 
 # Directories
