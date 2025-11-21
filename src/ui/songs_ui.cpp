@@ -2,6 +2,7 @@
 #include "ui/song_ui.hpp"
 #include "ui/Main.hpp"
 #include <iostream>
+#include <algorithm>
 
 void SongsUI::run()
 {

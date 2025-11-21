@@ -2,6 +2,8 @@
 #include <string>
 #include <memory>
 #include <stack>
+#include <queue>
+#include <vector>
 #include "ui/songs_ui.hpp"
 #include "types.hpp"
 #include "player.hpp"

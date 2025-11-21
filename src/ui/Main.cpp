@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <algorithm>
 
 // Define the static member variables
 std::vector<Playlist> Main::playlists_;
